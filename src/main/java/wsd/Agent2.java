@@ -207,7 +207,7 @@ public class Agent2 extends Agent {
             }
 
 
-            Long timeInterval = 1L;
+            Long timeInterval = 10L;
 
 
             if (!onLastLane) {
