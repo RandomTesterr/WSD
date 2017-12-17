@@ -64,7 +64,7 @@ public class Agent1 extends Agent {
             fe.printStackTrace();
         }
 
-        myPArameters = new VehicleParameters(speed, 150L);
+        myPArameters = new VehicleParameters(speed, 150L, 1L);
 
         addBehaviour(new Receiver());
         //addBehaviour(new CreateNewCar(this, 3000));

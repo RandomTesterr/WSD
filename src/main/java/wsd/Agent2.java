@@ -22,8 +22,7 @@ import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
-import ontology.ParametersOntology;
-import ontology.VehicleParameters;
+import ontology.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.lang.System;
 
 
 public class Agent2 extends Agent {
@@ -38,11 +38,24 @@ public class Agent2 extends Agent {
 
     VehicleParameters myPArameters;
     VehicleParameters otherPArameters;
+    //nowe
+    SignParameters mySignParameters;
+    //nowe2
+    Boolean mustFreeLane;
+    Boolean FreeLaneDone;
+    Boolean slowDownToLetIn;
+    AID whoToAskToLetMeIn;
+    long timerStart;
+    long timerEnd;
+    Boolean ERreceived;
+
     Ontology ontology = ParametersOntology.getInstance();
 
     private static final String AGENT_TYPE = "vehicle_agent";
 
     private HashMap<AID, VehicleParameters> otherCarsParams = new HashMap<>();
+    private HashMap<AID, SignParameters> allSignsParams = new HashMap<>();
+    private HashMap<AID, VehicleParameters> otherEmergencyParams = new HashMap<>();
 
     @Override
     protected void setup() {
@@ -66,8 +79,15 @@ public class Agent2 extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
+        //nowe2
+        mustFreeLane = false;
+        FreeLaneDone = false;
+        slowDownToLetIn = false;
+        timerStart=0L;
+        timerEnd=0L;
+        ERreceived = false;
 
-        myPArameters = new VehicleParameters(speed, MaxSpeed);
+        myPArameters = new VehicleParameters(speed, MaxSpeed, 1L);
 
         addBehaviour(new Receiver());
         //  addBehaviour(new CreateNewCar(this, 3000));
@@ -127,7 +147,71 @@ public class Agent2 extends Agent {
             Long zaObokNum = 9999999L;
             VehicleParameters obok = null;
 
-            //TODO: znlesc najblizsze mnie samochody i zobaczyć czy mogę zmienić na pas pierwszy
+            //tutaj for mo calej mapie znakow
+            //interesuje nas znak o pozycji Y najblizszej naszej
+            SignParameters defaultSign = new SignParameters(0L, 9999999L,9999999L );
+            SignParameters closedSign=defaultSign;
+            SignParameters closedprzedSign=defaultSign;
+            Long diffminietySign = -9999999L;
+            Long diffprzedSign = 9999999L;
+
+            //przyjete zalozenie - zakresy znakow nie moga na siebie nachodzic
+            for (Map.Entry<AID, SignParameters> entry : allSignsParams.entrySet()) {
+                AID aid = entry.getKey();
+                SignParameters param = entry.getValue();
+                Long diff = param.getY_begin() - myPArameters.getY();
+
+                if(diff<=0) {
+                    //jesli mniejsze od 0 lub rowne 0 to znak jest juz miniety przez samochod = obowiazuje
+                    //im wartosc bardziej blizsza 0 tym bardzieje aktualny znak - czyli potrzeba sprawdzać ktory znak ma najwikeszy diff
+                    //ten bedzie obowiazywac
+                    if(diff>diffminietySign) {
+                        Long diffToEnd = param.getY_end() - myPArameters.getY();
+
+                        if(diffToEnd>0) {
+                            //jesli koniec znaku jest jeszcze nie miniety
+                            diffminietySign = diff;
+                            closedSign = param;
+                        }
+                        else {
+                            //znak jest miniety nie obowiazuje
+                            //closedSign bez zmian, domyslny znak wciaz obowiazuje
+                        }
+                    }
+                }
+                else {
+                    //jesli wieksze od 0 to znak jest jeszcze nie miniety przez samochod = nie obowiazuje
+                    //zostaje poprzedni
+                    //trzeba zainicjowac jakims znakeim domyslnym na wypadek gdyby wszystkie znaki byly przed
+                    if(diff<diffprzedSign) {
+                        //jesli znak jest przed autem i blizej niz poprzedni zapisany to zapisz go
+                        diffprzedSign=diff;
+                        closedprzedSign = param;
+                    }
+                    else {
+                        //nothing
+                    }
+                }
+
+            }
+            myPArameters.set_max_speed_of_sign(closedSign.getLimit_max_speed());
+
+             System.out.println("dane znaku najblizszego za autem o nazwie  " + getName()+ "pamrametry:" +  closedSign.getY_begin() +"  "+closedSign.getY_end()+ "  "+closedSign.getLimit_max_speed());
+             System.out.println("dane znaku najblizszego przed autem  " + getName() + "pamrametry:" + closedprzedSign.getY_begin() +"  "+closedprzedSign.getY_end()+ "  "+closedprzedSign.getLimit_max_speed());
+
+            Boolean signCloseBy = false;
+            Long minimal_distant = 100L;
+            //test czy znak jest wystarczajaco blisko by zaczac zwalniac
+            Long temp = closedprzedSign.getY_begin()-myPArameters.getY();
+            if((temp <minimal_distant)&&(temp >0)) {
+                //trzeba zaczac zwalniac
+                signCloseBy=true;
+            }
+            else {
+                //nie trzeba zwalniac
+            }
+
+
             for (Map.Entry<AID, VehicleParameters> entry : otherCarsParams.entrySet()) {
 
                 AID aid = entry.getKey();
@@ -154,6 +238,8 @@ public class Agent2 extends Agent {
                     if (-diff < zaObokNum && diff < 0) {
                         zaObokNum = -diff;
                         zaObok = param;
+                        //new2
+                        whoToAskToLetMeIn = aid;
                     }
                     if (diff == 0) {
                         log.error("Dziwny przypadek");
@@ -162,6 +248,8 @@ public class Agent2 extends Agent {
             }
 
             Boolean canChangeLane = false;
+
+
 
             if(przedObok == null){
                 if(zaObok == null){
@@ -193,8 +281,24 @@ public class Agent2 extends Agent {
             }
 
 
+            //new2, zeby nie staraly sie wyprzedzac innych samochodow gdy Emergency jest na lewym
+            //sprawdzic inne podejscia do problemu
+            if(ERreceived && myPArameters.getX()==1L)
+                timerStart=System.nanoTime();
 
-            Boolean canMoveOn = false;
+
+                 timerEnd = System.nanoTime();
+
+                long elapsedTime = timerEnd - timerStart;
+                double seconds = (double)elapsedTime / 1000000000.0;
+
+                if(seconds<3)
+                    canChangeLane=false;
+
+
+
+
+                Boolean canMoveOn = false;
 
             if(przed == null){
                 canMoveOn = true;
@@ -209,23 +313,65 @@ public class Agent2 extends Agent {
 
             Long timeInterval = 10L;
 
+            if(mustFreeLane) slowDownToLetIn=false;
+            else if(slowDownToLetIn) mustFreeLane=false;
 
-            if (!onLastLane) {
-                if(przed == null ||canMoveOn){
 
-                    if(myPArameters.getSpeed()>=myPArameters.getMax_speed()){
+            if (!onLastLane) { //jestem na prawym pasie
+                if(slowDownToLetIn) //nowe2
 
-                        myPArameters.setSpeed(myPArameters.getMax_speed());
-                        myPArameters.setAcceleration(0L);
-                        myPArameters.updateY(timeInterval);
-
-                    }else{
-
-                        myPArameters.addPercentageAcceleration(10L);
-                        myPArameters.updateSpeed();
-                        myPArameters.updateY(timeInterval);
-
+                {
+                    myPArameters.addSpeed(-myPArameters.getSpeed()/10);
+                    if(myPArameters.getSpeed() <= 0L)
+                    {   myPArameters.setSpeed(0L);
+                        myPArameters.setAcceleration(5L);
                     }
+
+
+                }
+                else if(przed == null ||canMoveOn){
+                    if (signCloseBy==true) {
+                        if (myPArameters.getSpeed() >= closedprzedSign.getLimit_max_speed()) {
+                            //jesli trzeba zwolinic bo aktualna predkosc jest wieksza od tej na zblizajacym sie znaku
+                            myPArameters.addPercentageAcceleration(-10L);
+                            myPArameters.updateSpeed();
+                            myPArameters.updateY(timeInterval);
+
+                        }
+                        else {
+                            //dostosowywanie predkosi gdy jest przed znakiem
+
+                            myPArameters.setAcceleration(0L);
+                            if (myPArameters.getSpeed() < closedprzedSign.getLimit_max_speed()) {
+                                myPArameters.addPercentageAcceleration(10L);
+                                myPArameters.updateSpeed();
+
+                                //myPArameters.setSpeed(myPArameters.getMax_speed());
+                                //myPArameters.setAcceleration(0L);
+                                myPArameters.updateY(timeInterval);
+
+                            }
+                            else {
+                                myPArameters.setAcceleration(0L);
+                                myPArameters.updateY(timeInterval);
+                            }
+                            //myPArameters.updateY(timeInterval);
+                        }
+                    }
+                    else {
+
+                        if (myPArameters.getSpeed() >= myPArameters.getMax_speed()) {
+
+                            myPArameters.setSpeed(myPArameters.getMax_speed());
+                            myPArameters.setAcceleration(0L);
+                            myPArameters.updateY(timeInterval);
+
+                        } else {
+                                myPArameters.addPercentageAcceleration(10L);
+                                myPArameters.updateSpeed();
+                                myPArameters.updateY(timeInterval);
+                            }
+                        }
 
                 }else{
 
@@ -255,9 +401,15 @@ public class Agent2 extends Agent {
 
                         }else{
 
+                           // nowe2
                             myPArameters.setPercentageAcceler(-20L);
-                            myPArameters.updateSpeed();
-                            myPArameters.updateY(timeInterval);
+
+                            if(myPArameters.getSpeed() < 0L)
+                            {   myPArameters.setSpeed(0L);
+                                myPArameters.setPercentageAcceler(5L);
+                            }
+
+
 
                         }
 
@@ -265,11 +417,22 @@ public class Agent2 extends Agent {
 
                 }
 
-            }else{
+            }else{  //jestem na lewym pasie
 
-                //todo jezeli mam prosbe o zjechanie
 
-                if(canChangeLane){
+
+                if(mustFreeLane && ((przed != null && przedNum < 2*myPArameters.getSpeed() && przed.getSpeed()<myPArameters.getSpeed()) || przedObokNum< 3*myPArameters.getSpeed()) )
+
+                {
+                    myPArameters.addSpeed(-myPArameters.getSpeed()/10);
+                    if(myPArameters.getSpeed() < 0L)
+                        myPArameters.setSpeed(0L);
+
+
+
+                }
+
+                else if(canChangeLane){
 
                     if(myPArameters.getSpeed()>=myPArameters.getMax_speed()){
 
@@ -307,7 +470,7 @@ public class Agent2 extends Agent {
 
                     }else{
 
-                        //sendMessageRequestChange pass
+
                         if(Objects.equals(myPArameters.getSpeed(), przed.getSpeed())){
 
                             myPArameters.setAcceleration(0L);
@@ -316,8 +479,8 @@ public class Agent2 extends Agent {
                         }else{
 
                             myPArameters.setPercentageAcceler(-20L);
-                            myPArameters.updateSpeed();
-                            myPArameters.updateY(timeInterval);
+
+
 
                         }
 
@@ -328,9 +491,20 @@ public class Agent2 extends Agent {
             }
 
 
+            //nowe2
+            if(mustFreeLane && ((przed != null && przedNum < 2*myPArameters.getSpeed() && przed.getSpeed()<myPArameters.getSpeed()) || przedObokNum< 3*myPArameters.getSpeed()) )
+                if(whoToAskToLetMeIn != null)
+                    SendPleaseRequest(whoToAskToLetMeIn);
+
+
+            mustFreeLane = false;
+            slowDownToLetIn = false;
+            if(ERreceived && myPArameters.getX()==1L)
+                ERreceived=false;
 
             System.out.println("Parametrey dla: " + getName() + "\t to: Predkosc:  " + myPArameters.getSpeed() + ",\t X: " + myPArameters.getX() + ",\t Y: " + myPArameters.getY());
             SendParameters();
+
 
             if (myPArameters.getY() >= CarsApplication.MAX_Y) {
                 doDelete();
@@ -357,6 +531,29 @@ public class Agent2 extends Agent {
                         otherPArameters = v;
                         //System.out.println("Wartosci dla Agenta1: "+v.getMax_speed()+" "+v.getX()+" "+v.getSpeed());
                         otherCarsParams.put(msg.getSender(), v);
+                    }
+                    //nowe
+                    if (action instanceof SignParameters) {
+                        SignParameters v = (SignParameters) action;
+                        mySignParameters = v;
+                        //System.out.println("Wartosci dla Znaku: "+v.getY_begin()+" "+v.getY_end()+" "+v.getLimit_max_speed());
+                        allSignsParams.put(msg.getSender(), v);
+                    }
+                    //nowe2
+                    if(action instanceof EmergencyRequest)
+                    {
+                        EmergencyRequest eReq = (EmergencyRequest) action;
+                        mustFreeLane=true;
+                        ERreceived=true;
+
+                        SendPleaseRequest(whoToAskToLetMeIn);
+                    }
+                    if(action instanceof PleaseRequest)
+                    {
+                        PleaseRequest pReq = (PleaseRequest) action;
+                        slowDownToLetIn=true;
+
+
                     }
                 } catch (Codec.CodecException | OntologyException e) {
                     e.printStackTrace();
@@ -395,6 +592,32 @@ public class Agent2 extends Agent {
             e.printStackTrace();
         }
         send(msg);
+
+    }
+
+    //nowe2
+    private void SendPleaseRequest(AID receivingAgent) {
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+        AID receiver = new AID("AgentCar", AID.ISLOCALNAME);
+
+        msg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+        msg.setOntology(ParametersOntology.NAME);
+        msg.addReceiver(receivingAgent);
+
+
+        PleaseRequest pRequest;
+
+         //Please Request
+        pRequest = new PleaseRequest("prosze, wpusc mnie na prawy pas");
+        try {
+            getContentManager().fillContent(msg, new Action(receiver, pRequest));
+
+        } catch (Codec.CodecException | OntologyException e) {
+            e.printStackTrace();
+        }
+        send(msg);
+
+
 
     }
 
