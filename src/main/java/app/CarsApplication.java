@@ -6,7 +6,6 @@ import jade.core.ProfileImpl;
 import jade.core.Runtime;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import wsd.Agent2;
 
 public class CarsApplication {
     public static final Long MAX_Y = 20000L;
@@ -32,6 +31,6 @@ public class CarsApplication {
         profile.setParameter(Profile.GUI, "true");
         containerController = runtime.createMainContainer(profile);
 
-       // createAgent("Agent1", Agent2.class.getName(), new String[]{"speed:60"});
+       // createAgent("Agent1", VehicleAgent.class.getName(), new String[]{"speed:60"});
     }
 }

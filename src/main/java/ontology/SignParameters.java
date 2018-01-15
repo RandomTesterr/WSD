@@ -32,27 +32,27 @@ public class SignParameters implements Concept {
         this._x = _x;
     }
 
-    public Long getY_begin() {
+    public Long getYBegin() {
         return _y_begin;
     }
 
-    public void setY_begin(Long _y_start) {
+    public void setYBegin(Long _y_start) {
         this._y_begin = _y_start;
     }
 
-    public Long getY_end() {
+    public Long getYEnd() {
         return _y_end;
     }
 
-    public void setY_end(Long _y_end) {
+    public void setYEnd(Long _y_end) {
         this._y_end = _y_end;
     }
 
-    public Long getLimit_max_speed() {
+    public Long getLimitMaxSpeed() {
         return _limit_max_speed;
     }
 
-    public void setLimit_max_speed(Long _max_speed) {
+    public void setLimitMaxSpeed(Long _max_speed) {
         this._limit_max_speed = _max_speed;
     }
 }

@@ -75,21 +75,4 @@ public class SignSymbol {
     public AID getAid() {
         return aid;
     }
-
-//    public void translate(Long x, Long y) {
-//        double newY = GUIApp.ROAD_START_Y - (GUIApp.ROAD_START_Y - GUIApp.ROAD_END_Y) * y / CarsApplication.MAX_Y;
-//        line.setStartY(newY);
-//        line.setEndY(newY);
-//        if (!x.equals(this.x)) {
-//            if (x == 1) {
-//                moveToRightLane();
-//            } else if (x == 2) {
-//                moveToLeftLane();
-//            }
-//            this.x = x;
-//        }
-//
-//        line.toFront();
-//    }
-
 }

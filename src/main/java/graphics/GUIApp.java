@@ -12,9 +12,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import wsd.Agent2;
-import wsd.Sign;
-import wsd.Emergency;
+import wsd.EmergencyAgent;
+import wsd.VehicleAgent;
+import wsd.SignAgent;
 
 import java.util.ArrayList;
 
@@ -49,7 +49,6 @@ public class GUIApp extends Application {
         }
     }
 
-    //nowe
     private static ArrayList<SignSymbol> signSymbols = new ArrayList<>();
 
     private static SignSymbol findSymbolBySign(AID aid) {
@@ -71,23 +70,12 @@ public class GUIApp extends Application {
         });
     }
 
-//    public static void onUpdateParametersSign(AID aid, Long x, Long y) {
-//        SignSymbol symbol = findSymbolBySign(aid);
-//        if (symbol != null) {
-//            Platform.runLater(() -> symbol.translate(x, y));
-//        }
-//    }
-
     public static void onDeleteSign(AID aid) {
         SignSymbol symbol = findSymbolBySign(aid);
         if (symbol != null) {
             Platform.runLater(() -> rootView.getChildren().remove(symbol.getLine()));
         }
     }
-    //
-
-
-    // nowe MM
 
     private static ArrayList<EmergencySymbol> emergencySymbols = new ArrayList<>();
 
@@ -118,9 +106,6 @@ public class GUIApp extends Application {
         }
     }
 
-
-    // koniec noweMM
-
     static final Long ROAD_START_Y = 550L;
     static final Long ROAD_END_Y = 50L;
     static final double LANE_LEFT_X = 50.0;
@@ -130,7 +115,6 @@ public class GUIApp extends Application {
 
     static final double LANE_SIGN_X = LANE_LEFT_X+ROAD_WIDTH;
     static final double SIGN_LINE_WIDTH =ROAD_WIDTH/8;
-
 
 
     private void drawRoad() {
@@ -172,10 +156,6 @@ public class GUIApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        //
-        //System.out.print("test");
-        //
-
         Scene scene = new Scene(rootView,900, 600);
 
         VBox newVehicleBox = new VBox(10);
@@ -196,8 +176,6 @@ public class GUIApp extends Application {
 
         Button btnAddVehicle = new Button("New vehicle");
 
-
-
         btnAddVehicle.setOnMouseClicked(event -> {
             String speedStr = newVehicleSpeedField.getText();
             String name = newVehicleNameField.getText();
@@ -205,8 +183,8 @@ public class GUIApp extends Application {
             if (speedStr != null && !speedStr.isEmpty() && speedStr.matches("[0-9]+")
                     && name != null && !name.isEmpty()) {
                 String[] args = {"speed:" + speedStr, "maxSpeed:"+maxSpeed};
-                CarsApplication.createAgent(name, Agent2.class.getName(), args);
-                //CarsApplication.createAgent("qwerty", Sign.class.getName(), args9);
+                CarsApplication.createAgent(name, VehicleAgent.class.getName(), args);
+                //CarsApplication.createAgent("qwerty", SignAgent.class.getName(), args9);
 
             }
         });
@@ -215,7 +193,6 @@ public class GUIApp extends Application {
 
         rootView.getChildren().add(newVehicleBox);
 
-        //nowe
         VBox newSignBox = new VBox(10);
         newSignBox.setLayoutX(500);
         newSignBox.setLayoutY(50);
@@ -236,7 +213,7 @@ public class GUIApp extends Application {
         newSignLimitMaxSpeedField.setPromptText("LimitMaxSpeed");
         newSignLimitMaxSpeedField.setFocusTraversable(false);
 
-        Button btnAddSign = new Button("New Sign");
+        Button btnAddSign = new Button("New SignAgent");
         btnAddSign.setOnMouseClicked(event2 -> {
             String name_sign = newSignNameField.getText();
             String Y_begin_str = newSignYBeginField.getText();
@@ -249,14 +226,12 @@ public class GUIApp extends Application {
                     && name_sign != null && !name_sign.isEmpty()) {
 
                 String[] args = {"y_begin:" + Y_begin_str, "y_end:" + Y_end_str, "maxSpeed:" + limitMaxSpeed_str};
-                CarsApplication.createAgent(name_sign, Sign.class.getName(), args);
+                CarsApplication.createAgent(name_sign, SignAgent.class.getName(), args);
             }
         });
         newSignBox.getChildren().addAll(newSignNameField, newSignYBeginField, newSignYEndField,newSignLimitMaxSpeedField ,  btnAddSign);
         rootView.getChildren().add(newSignBox);
-        //
 
-        //nowe MM
 
         VBox newEmergencyBox = new VBox(10);
         newEmergencyBox.setLayoutX(700);
@@ -274,7 +249,7 @@ public class GUIApp extends Application {
         newEmergencyMaxSpeedField.setPromptText("MaxSpeed");
         newEmergencyMaxSpeedField.setFocusTraversable(false);
 
-        Button btnAddEmergency = new Button("New Emergency Vehicle");
+        Button btnAddEmergency = new Button("New EmergencyAgent Vehicle");
 
         btnAddEmergency.setOnMouseClicked(event3 -> {
             String speedStr = newEmergencySpeedField.getText();
@@ -283,8 +258,8 @@ public class GUIApp extends Application {
             if (speedStr != null && !speedStr.isEmpty() && speedStr.matches("[0-9]+")
                     && name != null && !name.isEmpty()) {
                 String[] args = {"speed:" + speedStr, "maxSpeed:"+maxSpeed};
-                CarsApplication.createAgent(name, Emergency.class.getName(), args);
-                //CarsApplication.createAgent("qwerty", Sign.class.getName(), args9);
+                CarsApplication.createAgent(name, EmergencyAgent.class.getName(), args);
+                //CarsApplication.createAgent("qwerty", SignAgent.class.getName(), args9);
 
             }
         });
@@ -292,8 +267,6 @@ public class GUIApp extends Application {
         newEmergencyBox.getChildren().addAll(newEmergencyNameField, newEmergencySpeedField, newEmergencyMaxSpeedField,  btnAddEmergency);
 
         rootView.getChildren().add(newEmergencyBox);
-
-        //koniec nowe MM
 
         scene.setFill(Color.LIGHTGREY);
         drawRoad();
@@ -303,9 +276,6 @@ public class GUIApp extends Application {
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
-
-
-
     }
 
     public static void main(String[] args) {

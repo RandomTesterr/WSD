@@ -28,10 +28,10 @@ public class CarsMap {
             e.printStackTrace();
         }
 
-        if(agentType == "emergency_agent")
+        if(agentType.equals("emergency_agent"))
         {
-            String aType = "vehicle_agent";
-            sd.setType(aType);
+            String a_type = "vehicle_agent";
+            sd.setType(a_type);
             template.addServices(sd);
 
             try {
@@ -44,10 +44,10 @@ public class CarsMap {
                 e.printStackTrace();
             }
         }
-        else if(agentType == "vehicle_agent")
+        else if(agentType.equals("vehicle_agent"))
         {
-            String aType = "emergency_agent";
-            sd.setType(aType);
+            String a_type = "emergency_agent";
+            sd.setType(a_type);
             template.addServices(sd);
 
             try {
@@ -64,7 +64,6 @@ public class CarsMap {
         return agents;
     }
 
-    //nowe
     public static List<AID> getAllAgentsOfOneType(Agent thisAgent, String agentType) {
         DFAgentDescription template = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
@@ -81,7 +80,7 @@ public class CarsMap {
             e.printStackTrace();
         }
 
-        if(agentType == "emergency_agent")
+        if(agentType.equals("emergency_agent"))
         {
             String aType = "vehicle_agent";
             sd.setType(aType);
@@ -97,10 +96,10 @@ public class CarsMap {
                 e.printStackTrace();
             }
         }
-        else if(agentType == "vehicle_agent")
+        else if(agentType.equals("vehicle_agent"))
         {
-            String aType = "emergency_agent";
-            sd.setType(aType);
+            String a_type = "emergency_agent";
+            sd.setType(a_type);
             template.addServices(sd);
 
             try {

@@ -29,14 +29,15 @@ public class VehicleParameters implements Concept {
         this._acceleration=0L;
         this._max_speed_of_sign=maxSpeed;
     }
-//nowe
-    public Long get_max_speed_of_sign() {
+
+    public Long getMaxSpeedOfSign() {
         return  _max_speed_of_sign;
     }
-    public void set_max_speed_of_sign(Long max_speed_of_sign ) {
+
+    public void setMaxSpeedOfSign(Long max_speed_of_sign ) {
         this._max_speed_of_sign=max_speed_of_sign;
     }
-//
+
     public Long getX() {
         return _x;
     }
@@ -61,38 +62,24 @@ public class VehicleParameters implements Concept {
         _y += _speed/interval;
     }
 
-//    public void setPercentageAcceler(Long percent){
-//        if(_speed == 0L){
-//            _speed += _max_speed*2/10;
-//        }
-//        _acceleration = _speed*percent/100;
-//    }
-    //
-    public void setPercentageAcceler(Long percent){
+    public void setPercentageAcceleration(Long percent){
         if(_speed == 0L){
-            _speed += getMax_speed()*2/10;
+            _speed += getMaxSpeed()*2/10;
         }
         _acceleration = _speed*percent/100;
     }
-    //
+
     public void addAcceleration(Long acc){
         _acceleration +=acc;
     }
 
-//    public void addPercentageAcceleration(Long percent){
-//        if(_speed == 0L){
-//            _speed += _max_speed*2/10;
-//        }
-//        _acceleration += _speed*percent/100;
-//    }
-    //
     public void addPercentageAcceleration(Long percent){
         if(_speed == 0L){
-            _speed += getMax_speed()*2/10;
+            _speed += getMaxSpeed()*2/10;
         }
         _acceleration += _speed*percent/100;
     }
-    //
+
     public Long getY() {
         return _y;
     }
@@ -109,21 +96,11 @@ public class VehicleParameters implements Concept {
         this._speed = speed;
     }
 
-//    public Long getMax_speed() {
-//        return _max_speed;
-//    }
-    //nowe
-    public Long getMax_speed() {
-        if(_max_speed>_max_speed_of_sign) {
-            return _max_speed_of_sign;
-        }
-        else {
-            return _max_speed;
-        }
+    public Long getMaxSpeed() {
+        return Math.min(_max_speed, _max_speed_of_sign);
 }
-    //
 
-    public void setMax_speed(Long max_speed) {
+    public void setMaxSpeed(Long max_speed) {
         this._max_speed = max_speed;
     }
 

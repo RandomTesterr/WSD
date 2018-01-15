@@ -15,15 +15,15 @@ public class ParametersOntology extends Ontology {
     public static final String X = "x";
     public static final String Y = "y";
     public static final String SPEED = "speed";
-    public static final String MAX_SPEED = "max_speed";
+    public static final String MAX_SPEED = "MaxSpeed";
     public static final String ACCELERATION = "acceleration";
 
     //nowe
     public static final String SIGNPARAMETERS = "SignParameters";
     public static final String X_SIGN = "x";
-    public static final String Y_BEGIN = "y_begin";
-    public static final String Y_END = "y_end";
-    public static final String LIMIT_MAX_SPEED = "limit_max_speed";
+    public static final String Y_BEGIN = "YBegin";
+    public static final String Y_END = "YEnd";
+    public static final String LIMIT_MAX_SPEED = "LimitMaxSpeed";
 
     //nowe2
     public static final String EMERGENCY_REQUEST_PARAMETERS = "EmergencyRequestParameters";
@@ -50,7 +50,6 @@ public class ParametersOntology extends Ontology {
             cs.add(MAX_SPEED, (PrimitiveSchema)getSchema(BasicOntology.INTEGER));
             cs.add(ACCELERATION, (PrimitiveSchema)getSchema(BasicOntology.INTEGER));
 
-            //nowe
             //czemu sa one opcjonalne??
             add(new ConceptSchema(SIGNPARAMETERS), SignParameters.class);
             ConceptSchema cs2 = (ConceptSchema)getSchema(SIGNPARAMETERS);
@@ -59,7 +58,6 @@ public class ParametersOntology extends Ontology {
             cs2.add(Y_END, (PrimitiveSchema)getSchema(BasicOntology.INTEGER), ObjectSchema.OPTIONAL);
             cs2.add(LIMIT_MAX_SPEED, (PrimitiveSchema)getSchema(BasicOntology.INTEGER));
 
-            //nowe2
             add(new ConceptSchema(EMERGENCY_REQUEST_PARAMETERS), EmergencyRequest.class);
             ConceptSchema cs3 = (ConceptSchema)getSchema(EMERGENCY_REQUEST_PARAMETERS);
             cs3.add(EMERGENCY_REQUEST_CONTENT, (PrimitiveSchema)getSchema(BasicOntology.STRING));

@@ -1,9 +1,6 @@
 package wsd;
 
-import app.CarsApplication;
 import graphics.GUIApp;
-import jade.content.Concept;
-import jade.content.ContentElement;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.Ontology;
@@ -11,29 +8,24 @@ import jade.content.onto.OntologyException;
 import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
-import jade.wrapper.AgentController;
-import jade.wrapper.StaleProxyException;
 import ontology.ParametersOntology;
 import ontology.SignParameters;
-import ontology.VehicleParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 
-public class Sign extends Agent {
+public class SignAgent extends Agent {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    SignParameters myPArameters;
+    SignParameters myParameters;
     Ontology ontology = ParametersOntology.getInstance();
 
     private static final String AGENT_TYPE = "sign_agent";
@@ -49,9 +41,9 @@ public class Sign extends Agent {
 
         Long y_begin = Long.parseLong(args[0].toString().split(":")[1]);
         Long y_end = Long.parseLong(args[1].toString().split(":")[1]);
-        Long Limit_MaxSpeed = Long.parseLong(args[2].toString().split(":")[1]);
+        Long limit_max_speed = Long.parseLong(args[2].toString().split(":")[1]);
 
-        System.out.println("Utworzono Agenta typu ZNAK: " + getName() + ", y_begin: " + y_begin + ", y_end: " + y_end + ", Limit_MaxSpeed: " + Limit_MaxSpeed);
+        System.out.println("Utworzono Agenta typu ZNAK: " + getName() + ", y_begin: " + y_begin + ", y_end: " + y_end + ", Limit_MaxSpeed: " + limit_max_speed);
         getContentManager().registerLanguage(new SLCodec(), FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(ontology);
 
@@ -68,11 +60,10 @@ public class Sign extends Agent {
             fe.printStackTrace();
         }
 
-        myPArameters = new SignParameters(y_begin, y_end, Limit_MaxSpeed);
+        myParameters = new SignParameters(y_begin, y_end, limit_max_speed);
         addBehaviour(new SendParametersSign(this,100));
 
-        //GUIApp.onSetupSign(getAID(), myPArameters.getX());
-        GUIApp.onSetupSign(getAID(),myPArameters.getY_begin(),myPArameters.getY_end(),myPArameters.getLimit_max_speed());
+        GUIApp.onSetupSign(getAID(), myParameters.getYBegin(), myParameters.getYEnd(), myParameters.getLimitMaxSpeed());
 
     }
 
@@ -91,17 +82,14 @@ public class Sign extends Agent {
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         List<AID> receivers = CarsMap.getAllAgentsOfOneType(this, CAR_AGENT_TYPE);
         AID receiver = new AID("AgentCar", AID.ISLOCALNAME);
-        //msg.addReceiver(receiver);
-        int count=0;
+
         for (AID rec : receivers) {
             msg.addReceiver(rec);
-            count++;
         }
-        //System.out.println("qqqq  "+ count);
         msg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
         msg.setOntology(ParametersOntology.NAME);
         try {
-            getContentManager().fillContent(msg, new Action(receiver, myPArameters));
+            getContentManager().fillContent(msg, new Action(receiver, myParameters));
         } catch (Codec.CodecException | OntologyException e) {
             e.printStackTrace();
         }
