@@ -31,6 +31,6 @@ public class CarsApplication {
         profile.setParameter(Profile.GUI, "true");
         containerController = runtime.createMainContainer(profile);
 
-       // createAgent("Agent1", VehicleAgent.class.getName(), new String[]{"speed:60"});
+        LoadConfig.loadAgents();
     }
 }

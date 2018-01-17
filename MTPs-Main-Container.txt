@@ -1,1 +1,1 @@
-http://10.8.6.108:7778/acc
+http://PokorLaptop.home:7778/acc
