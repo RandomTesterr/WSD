@@ -9,10 +9,18 @@
     <vehicle name = "Vehicle">
         <speed>100</speed>
         <max_speed>250</max_speed>
+        <delay>2.5</delay>
     </vehicle>
 
     <emergency name = "Emergency">
         <speed>150</speed>
         <max_speed>300</max_speed>
+        <delay>1.75</delay>
+    </emergency>
+
+    <emergency name = "Emergency2">
+        <speed>150</speed>
+        <max_speed>300</max_speed>
+        <delay>10.0</delay>
     </emergency>
 </class>

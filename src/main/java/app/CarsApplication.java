@@ -31,6 +31,7 @@ public class CarsApplication {
         profile.setParameter(Profile.GUI, "true");
         containerController = runtime.createMainContainer(profile);
 
-        LoadConfig.loadAgents();
+        LoadConfig load_config = new LoadConfig();
+        new Thread(() -> load_config.runAgents("config.xml")).run();
     }
 }
