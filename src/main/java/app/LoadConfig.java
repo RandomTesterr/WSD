@@ -130,7 +130,7 @@ public class LoadConfig {
                 Element e_vehicle = (Element) vehicle;
                 String[] args = {
                         "speed:" + e_vehicle.getElementsByTagName("speed").item(0).getTextContent(),
-                        "maxSpeed:" + e_vehicle.getElementsByTagName("speed").item(0).getTextContent()
+                        "maxSpeed:" + e_vehicle.getElementsByTagName("max_speed").item(0).getTextContent()
                 };
 
                 agent_params_.add(new AgentParams(
@@ -151,7 +151,7 @@ public class LoadConfig {
                 Element e_emergency_vehicle = (Element) emergency_vehicle;
                 String[] args = {
                         "speed:" + e_emergency_vehicle.getElementsByTagName("speed").item(0).getTextContent(),
-                        "maxSpeed:" + e_emergency_vehicle.getElementsByTagName("speed").item(0).getTextContent()
+                        "maxSpeed:" + e_emergency_vehicle.getElementsByTagName("max_speed").item(0).getTextContent()
                 };
 
                 agent_params_.add(new AgentParams(
